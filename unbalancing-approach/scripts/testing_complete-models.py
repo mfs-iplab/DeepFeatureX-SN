@@ -51,9 +51,9 @@ if args.robustness_test:
     for testin in ['jpegQF90','jpegQF80','jpegQF70','jpegQF60','jpegQF50']:
         print(f'-   {testin}')
         if args.classification_type=='binary':
-            test = balance_binary_test(dataset_for_robustness(dset_dir=f'/media/lguarnera_group/opontorno/testing_robustness/testing_dset-{testin}', transforms=trans))
+            test = balance_binary_test(dataset_for_robustness(dset_dir=robustnessdset_path+f'/testing_dset-{testin}', transforms=trans))
         else:
-            test = balance_test(dataset_for_robustness(dset_dir=f'/media/lguarnera_group/opontorno/testing_robustness/testing_dset-{testin}', transforms=trans))
+            test = balance_test(dataset_for_robustness(dset_dir=robustnessdset_path+f'/testing_dset-{testin}', transforms=trans))
 
         testload = DataLoader(test, batch_size=1, shuffle=True, num_workers=0, drop_last=False)
         loss = nn.CrossEntropyLoss()

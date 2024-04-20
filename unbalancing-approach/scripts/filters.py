@@ -2,6 +2,7 @@ import os
 import sys
 import shutil
 import cv2
+from settings import *
 from tqdm import tqdm
 from PIL import Image
 import random
@@ -73,9 +74,9 @@ def JPEGCompr(image_path, path_test, image, fold, qfac = ['1','10','20','30','40
 
 filters = ['-jpegQF90','-jpegQF80','-jpegQF70','-jpegQF60','-jpegQF50', '-GaussNoise-3', '-GaussNoise-7', '-GaussNoise-15']
 
-path_dset = "/home/opontorno/data/opontorno/datasets"
-guidance_path = '/home/opontorno/data/opontorno/datasets_guidance.csv'
-path_test = "/home/opontorno/data/opontorno/testing_dset"
+path_dset = datasets_path
+guidance_path = guidance_path
+path_test = generalization_path
 perc_to_take = 1
 
 for fil in filters:
@@ -95,51 +96,3 @@ for _, row in guidance_csv.iterrows():
     if row['label']==2:
         JPEGCompr(img_path, path_test, img, fold, qfac=['90','80','70','60','50'])
         GaussNoise(img_path, path_test, img, fold, kernel=[3,7,15])
-
-# for architecture in os.listdir(path_dset):
-#     architecture_path = os.path.join(path_dset, architecture)
-#     for model in os.listdir(architecture_path):
-#         model_path = os.path.join(architecture_path, model)
-#         num = int(len(os.listdir(model_path))*perc_to_take)
-#         imgs_sample = random.sample(os.listdir(model_path), num)
-#         for img in tqdm(imgs_sample, desc=f'{model}'):
-#             img_path = os.path.join(model_path, img)
-            
-#             #-----------------------------------------------------------------------------------------------
-#             #       JPEG Compression
-#             #-----------------------------------------------------------------------------------------------
-        
-#             JPEGCompr(img_path, path_test, img, os.path.join(architecture, model), qfac=['90','80','70','60','50'])
-            
-#             # #-----------------------------------------------------------------------------------------------
-#             # #       Mirror
-#             # #-----------------------------------------------------------------------------------------------
-            
-#             # Mirror(im, image, pathOut, fold)
-                
-#             # #-----------------------------------------------------------------------------------------------
-#             # #       Rotation
-#             # #-----------------------------------------------------------------------------------------------
-        
-#             # Rotation(im, image, pathOut, fold)
-            
-#             # #-----------------------------------------------------------------------------------------------
-#             # #       Add Gaussian Blur
-#             # #-----------------------------------------------------------------------------------------------
-        
-#             # GaussNoise(im, image, pathOut, fold)
-                
-#             # #-----------------------------------------------------------------------------------------------
-#             # #       ZoomIn ZoomOut
-#             # #-----------------------------------------------------------------------------------------------
-            
-#             # Scaling(im, image, pathOut, fold)
-    
-
-# for q in filters:
-#     print(f'\n- {q}:')
-#     for architecture in os.listdir(path_test+q):
-#         architecture_path = os.path.join(path_dset, architecture)
-#         for model in os.listdir(architecture_path):
-#             model_path = os.path.join(architecture_path, model)
-#             print(f'number of compressed in {q} images for {model}: {len(os.listdir(os.path.join(path_test+q,architecture, model)))}')  

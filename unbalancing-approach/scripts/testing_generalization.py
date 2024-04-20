@@ -41,7 +41,7 @@ loss = nn.CrossEntropyLoss()
 #test = balance_binary_test(dataset_for_robustness(dset_dir='/home/opontorno/data/opontorno/generalization_datasets', transforms=trans))
 for folder in ['all']:#['inner_gan', 'outer_gan', 'io_gan', 'inner_dm', 'outer_dm', 'io_dm', 'inner_all', 'outer_all', 'all']:
     print(f'-   {folder}')
-    test = make_binary(dataset_for_generaization(dset_dir=f'/media/lguarnera_group/opontorno/testing_data/{folder}', transforms=trans))
+    test = make_binary(dataset_for_generaization(dset_dir=generalization_path+f'/{folder}', transforms=trans))
     testload = DataLoader(test, batch_size=1, shuffle=True, num_workers=0, drop_last=False)
 
     loss = nn.CrossEntropyLoss()
