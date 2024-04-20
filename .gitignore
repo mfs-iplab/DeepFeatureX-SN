@@ -3,3 +3,4 @@ wandb/
 *.sh
 guidance.csv
 __pycache__/
+*.yaml
