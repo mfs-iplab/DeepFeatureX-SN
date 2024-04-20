@@ -1,0 +1,5 @@
+wandb/
+*.out
+*.sh
+guidance.csv
+__pycache__/
