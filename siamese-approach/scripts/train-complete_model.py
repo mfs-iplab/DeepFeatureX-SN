@@ -14,10 +14,7 @@ from training_procedure import *
 from architecture import *
 from settings import *
 
-parser = argparse.ArgumentParser(
-    prog='training complete model',
-    description='train complete model'
-)
+parser = argparse.ArgumentParser()
 
 parser.add_argument('-b', '--backbone', type=str)
 parser.add_argument('-logs', '--mode_logs', type=str, default='online')

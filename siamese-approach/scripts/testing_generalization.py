@@ -13,10 +13,7 @@ from torch.utils.data import DataLoader
 
 # %% load the best complete models
 # %%
-parser = argparse.ArgumentParser(
-    prog='training complete model',
-    description='train complete model'
-)
+parser = argparse.ArgumentParser()
 
 parser.add_argument('-b', '--backbone', type=str)
 parser.add_argument('-model_type', '--model_type', type=str, default='complete', choices=['complete', 'backbone'])
@@ -38,8 +35,7 @@ else:
 trans = get_trans(model_name=args.backbone)
 loss = nn.CrossEntropyLoss()
 
-#test = balance_binary_test(dataset_for_robustness(dset_dir='/home/opontorno/data/opontorno/generalization_datasets', transforms=trans))
-for folder in ['all']:#['inner_gan', 'outer_gan', 'io_gan', 'inner_dm', 'outer_dm', 'io_dm', 'inner_all', 'outer_all', 'all']:
+for folder in ['inner_gan', 'outer_gan', 'io_gan', 'inner_dm', 'outer_dm', 'io_dm', 'inner_all', 'outer_all', 'all']:
     print(f'-   {folder}')
     test = make_binary(dataset_for_generaization(dset_dir=generalization_path+f'/{folder}', transforms=trans))
     testload = DataLoader(test, batch_size=1, shuffle=True, num_workers=0, drop_last=False)

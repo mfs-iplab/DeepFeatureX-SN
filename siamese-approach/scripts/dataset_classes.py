@@ -48,14 +48,40 @@ class mydataset(Dataset):
 
 class pair_dset(Dataset):
   def __init__(self, dset_dir, guidance, main_class=None, for_basemodel=True, for_testing=False, transforms=T.Compose([])):
-     self.dset = mydataset(dset_dir=dset_dir, main_class=main_class, guidance=guidance, for_basemodel=for_basemodel, for_testing=for_testing, transforms=transforms)
-     self.idx_list = get_counts_idx(self.dset, binary=True if for_basemodel else False)[1]
-     self.generate_pairs()
+    self.dset_dir = Path(dset_dir)
+    self.transforms = transforms
+    self.files = []
+    labels = pd.read_csv(guidance)
+    models = sorted(os.listdir(self.dset_dir))
+    n=0 if for_basemodel else 1
+    if for_testing==True: n=2
+    for model_name in models:
+      if for_basemodel:
+        assert main_class in models
+        class_idx=1 if model_name==main_class else 0
+      else:
+        class_idx = models.index(model_name) # model class
+      model_path = os.path.join(self.dset_dir, model_name)
+      architectures = sorted(os.listdir(model_path))
+      for architecture_name in architectures:
+        class_idx2 = architectures.index(architecture_name) # architecture class
+        architecture_path = os.path.join(model_path, architecture_name)         
+        for image in os.listdir(architecture_path):
+          image_path = os.path.join(architecture_path, image)
+          if np.array(labels[labels['image_path']==image_path])[0,0]==n:
+            self.files += [{"file": image_path, "class_mod": class_idx, "class_arch": class_idx2}]
+          else:
+            continue
+    self.idx_list = [[], []] if for_basemodel else [[], [], []]
+    for idx, item in enumerate(self.files):
+      class_mod = item['class_mod']
+      self.idx_list[class_mod].append(idx)   
+    self.generate_pairs()
   def generate_pairs(self):
-     self.pair_labels = (torch.rand(len(self.dset)) > 0.5).long()
+     self.pair_labels = (torch.rand(len(self.files)) > 0.5).long()
      self.paired_idx = []
      for idx, label in enumerate(self.pair_labels):
-        c1 = self.dset[idx][1].item()
+        c1 = self.files[idx]['class_mod']
         if label==0:
            j = np.random.choice(self.idx_list[c1])
         else:
@@ -63,13 +89,15 @@ class pair_dset(Dataset):
            j = np.random.choice(self.idx_list[diff_class])
         self.paired_idx.append(j)
   def __len__(self):
-     return(len(self.dset))
+     return(len(self.files))
   def __getitem__(self, i):
-     img, klass, _ = self.dset[i]
-     paired_img, paired_klass, _ = self.dset[self.paired_idx[i]]
-     pair_label = self.pair_labels[i]
-     return img, paired_img, klass, paired_klass, pair_label 
-
+    item = self.files[i]
+    paired_item = self.files[self.paired_idx[i]]
+    img, klass = self.transforms(Image.open(item['file']).convert("RGB")), torch.tensor(item['class_mod'])
+    paired_img, paired_klass = self.transforms(Image.open(paired_item['file']).convert("RGB")), torch.tensor(paired_item['class_mod'])
+    pair_label = self.pair_labels[i]
+    return img, paired_img, klass, paired_klass, pair_label 
+  
 class dataset_for_robustness(Dataset):
   def __init__(self, dset_dir, transforms=T.Compose([])):
     self.dset_dir = Path(dset_dir)

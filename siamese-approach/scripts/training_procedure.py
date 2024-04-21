@@ -12,7 +12,7 @@ from IPython.display import clear_output
 
 dev = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-def training(model, loaders, epochs, optimizer, loss_fn, starting_epoch=0, scheduler=None, mode_logs:str='online', model_name='', save_best_model=False, saving_path='', initial_val_to_beat=10):
+def train(model, loaders, epochs, optimizer, loss_fn, starting_epoch=0, scheduler=None, mode_logs:str='online', model_name='', save_best_model=False, saving_path='', initial_val_to_beat=10):
   if save_best_model: assert saving_path.endswith('.pt')
   wandb.init(
     project='siamese-approach',
@@ -79,7 +79,7 @@ def training(model, loaders, epochs, optimizer, loss_fn, starting_epoch=0, sched
   print(f'total training time: {(esecution_time/60):2f} minutes.\n')
   wandb.finish()
 
-def training_siamese_encoder(model, loaders, epochs, optimizer, loss_fn, scheduler=None, starting_epoch=0, mode_logs:str='online', save_best_model=False, model_name='', saving_path='', initial_val_to_beat=10):
+def train_siamese(model, loaders, epochs, optimizer, loss_fn, scheduler=None, starting_epoch=0, mode_logs:str='online', save_best_model=False, model_name='', saving_path='', initial_val_to_beat=10):
   if save_best_model: assert saving_path.endswith('.pt')
   wandb.init(
     project='siamese-approach',
@@ -128,7 +128,7 @@ def training_siamese_encoder(model, loaders, epochs, optimizer, loss_fn, schedul
   print(f'total training time: {(esecution_time/60):2f} minutes.\n')
   wandb.finish()  
 
-def testing(model, test_loader, loss_fn, plot_cm=False, save_cm=False, classes=None, average='binary', saving_dir='', model_name='', convert_to_binary=False):
+def test(model, test_loader, loss_fn, plot_cm=False, save_cm=False, classes=None, average='binary', saving_dir='', model_name='', convert_to_binary=False):
   assert not saving_dir.endswith('/')
   model.eval()
   model.to(dev)
