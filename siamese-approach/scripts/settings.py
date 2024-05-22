@@ -6,7 +6,7 @@ datasets_path = os.path.join(working_dir, 'datasets')
 robustnessdset_path = os.path.join(working_dir, 'testing_robustness')
 generalization_path = os.path.join(working_dir, 'testing_generalization')
 guidance_path = os.path.join(working_dir, 'guidance.csv')
-models_dir = os.path.join(working_dir, 'models/unbalancing-approach')
+models_dir = os.path.join(working_dir, 'models/siamese-approach')
 
 for folder in ['bm-dm', 'bm-gan', 'bm-real', 'complete']:
     folder_dir = os.path.join(models_dir, folder)
