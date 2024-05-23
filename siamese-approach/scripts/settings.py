@@ -37,4 +37,5 @@ def main():
       writer.writerows(data)
 
 if __name__=='__main__':
+    print('writing new guidance.csv...')
     main()

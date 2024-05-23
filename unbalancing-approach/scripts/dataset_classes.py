@@ -16,8 +16,8 @@ class mydataset(Dataset):
     self.files = []
     labels = pd.read_csv(guidance)
     models = sorted(os.listdir(self.dset_dir))
-    n=0 if for_overfitting==True else 1
-    if for_testing==True: n=2
+    n=0 if for_overfitting else 1
+    if for_testing: n=2
     for model_name in models:
       class_idx = models.index(model_name) # model class
       model_path = os.path.join(self.dset_dir, model_name)
@@ -27,7 +27,8 @@ class mydataset(Dataset):
         architecture_path = os.path.join(model_path, architecture_name)         
         for image in os.listdir(architecture_path):
           image_path = os.path.join(architecture_path, image)
-          if np.array(labels[labels['image_path']==image_path])[0,0]==n:
+          image_dir = image_path.split('datasets')[1]
+          if np.array(labels[labels['image_path']==image_dir])[0,0]==n:
             self.files += [{"file": image_path, "class_mod": class_idx, "class_arch": class_idx2}]
           else:
             continue

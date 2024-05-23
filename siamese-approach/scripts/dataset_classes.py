@@ -17,7 +17,7 @@ class mydataset(Dataset):
     labels = pd.read_csv(guidance)
     models = sorted(os.listdir(self.dset_dir))
     n=0 if for_basemodel else 1
-    if for_testing==True: n=2
+    if for_testing: n=2
     for model_name in models:
       if for_basemodel:
         assert main_class in models
@@ -31,7 +31,8 @@ class mydataset(Dataset):
         architecture_path = os.path.join(model_path, architecture_name)         
         for image in os.listdir(architecture_path):
           image_path = os.path.join(architecture_path, image)
-          if np.array(labels[labels['image_path']==image_path])[0,0]==n:
+          image_dir = image_path.split('datasets')[1]
+          if np.array(labels[labels['image_path']==image_dir])[0,0]==n:
             self.files += [{"file": image_path, "class_mod": class_idx, "class_arch": class_idx2}]
           else:
             continue
@@ -54,7 +55,7 @@ class pair_dset(Dataset):
     labels = pd.read_csv(guidance)
     models = sorted(os.listdir(self.dset_dir))
     n=0 if for_basemodel else 1
-    if for_testing==True: n=2
+    if for_testing: n=2
     for model_name in models:
       if for_basemodel:
         assert main_class in models
@@ -68,7 +69,8 @@ class pair_dset(Dataset):
         architecture_path = os.path.join(model_path, architecture_name)         
         for image in os.listdir(architecture_path):
           image_path = os.path.join(architecture_path, image)
-          if np.array(labels[labels['image_path']==image_path])[0,0]==n:
+          image_dir = image_path.split('datasets')[1]
+          if np.array(labels[labels['image_path']==image_dir])[0,0]==n:
             self.files += [{"file": image_path, "class_mod": class_idx, "class_arch": class_idx2}]
           else:
             continue
@@ -248,3 +250,4 @@ def get_trans(model_name:str):
             T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         ])
     return trans
+# %%

@@ -31,46 +31,50 @@ args = parser.parse_args()
 conf = f'-b{args.batch_size}-lr{args.learning_rate}-wd{args.weight_decay}-step{args.scheduler_stepsize}-gamma{args.scheduler_gamma}'
 
 # %% dataset preparation
-batch_size = args.batch_size
+def main():
+    batch_size = args.batch_size
 
-trans = get_trans(model_name=args.backbone)
+    trans = get_trans(model_name=args.backbone)
 
-dset = make_balanced(pair_dset(dset_dir=datasets_path, main_class=args.main_class, guidance=guidance_path, for_basemodel=True, for_testing=False, transforms=trans), binary=True)
+    dset = make_balanced(pair_dset(dset_dir=datasets_path, main_class=args.main_class, guidance=guidance_path, for_basemodel=True, for_testing=False, transforms=trans), binary=True)
 
-train, valid = random_split(dset, lengths=[.8,.2])
+    train, valid = random_split(dset, lengths=[.8,.2])
 
-trainload = DataLoader(train, batch_size=batch_size, shuffle=True, num_workers=0, drop_last=False)
-validload = DataLoader(valid, batch_size=batch_size, shuffle=True, num_workers=0, drop_last=False)
+    trainload = DataLoader(train, batch_size=batch_size, shuffle=True, num_workers=0, drop_last=False)
+    validload = DataLoader(valid, batch_size=batch_size, shuffle=True, num_workers=0, drop_last=False)
 
-loss=ContrastiveLoss(m=2)
+    loss=ContrastiveLoss(m=2)
 
-# %% training procedure
-backbone_name = args.backbone
+    # %% training procedure
+    backbone_name = args.backbone
 
-print(f'\n-  {backbone_name}\n')
-base_model = backbone(backbone_name, pretrained=True, finetuning=False, as_feature_extractor=True)
+    print(f'\n-  {backbone_name}\n')
+    base_model = backbone(backbone_name, pretrained=True, finetuning=False, as_feature_extractor=True)
 
-optimizer = Adam(base_model.parameters(),
-                lr=args.learning_rate, 
-                weight_decay=args.weight_decay, 
-                betas=(0.9, 0.999))
-scheduler = StepLR(optimizer=optimizer, step_size=args.scheduler_stepsize, gamma=args.scheduler_gamma) if args.scheduler else None
+    optimizer = Adam(base_model.parameters(),
+                    lr=args.learning_rate, 
+                    weight_decay=args.weight_decay, 
+                    betas=(0.9, 0.999))
+    scheduler = StepLR(optimizer=optimizer, step_size=args.scheduler_stepsize, gamma=args.scheduler_gamma) if args.scheduler else None
 
-def get_saving_dir(main_class):
-    if main_class=='gan_generated': sv_dir='bm-gan'
-    if main_class=='dm_generated': sv_dir='bm-dm'
-    if main_class=='real': sv_dir='bm-real'
-    return sv_dir
+    def get_saving_dir(main_class):
+        if main_class=='gan_generated': sv_dir='bm-gan'
+        if main_class=='dm_generated': sv_dir='bm-dm'
+        if main_class=='real': sv_dir='bm-real'
+        return sv_dir
 
-saving_dir = os.path.join(models_dir, get_saving_dir(args.main_class))+'/'
+    saving_dir = os.path.join(models_dir, get_saving_dir(args.main_class))+'/'
 
-train_siamese(model=base_model,
-        loaders={'train': trainload, 'valid': validload},
-        epochs=args.epochs,
-        optimizer=optimizer,
-        loss_fn=loss,
-        scheduler=scheduler,
-        mode_logs=args.mode_logs,
-        model_name=backbone_name,
-        save_best_model=args.save_model,
-        saving_path=saving_dir+backbone_name+conf+'.pt')
+    train_siamese(model=base_model,
+            loaders={'train': trainload, 'valid': validload},
+            epochs=args.epochs,
+            optimizer=optimizer,
+            loss_fn=loss,
+            scheduler=scheduler,
+            mode_logs=args.mode_logs,
+            model_name=backbone_name,
+            save_best_model=args.save_model,
+            saving_path=saving_dir+backbone_name+conf+'.pt')
+
+if __name__=='__main__':
+    main()
