@@ -11,12 +11,8 @@ from settings import *
 from architecture import *
 from torch.utils.data import DataLoader
 
-# %% load the best complete models
 # %%
-parser = argparse.ArgumentParser(
-    prog='training complete model',
-    description='train complete model'
-)
+parser = argparse.ArgumentParser()
 
 parser.add_argument('-b', '--backbone', type=str)
 parser.add_argument('-model_type', '--model_type', type=str, default='complete', choices=['complete', 'backbone'])

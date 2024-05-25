@@ -11,7 +11,6 @@ from settings import *
 from architecture import *
 from torch.utils.data import DataLoader
 
-# %% load the best complete models
 # %%
 parser = argparse.ArgumentParser()
 
