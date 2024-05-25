@@ -1,6 +1,9 @@
+# %%
+from dotenv import load_dotenv, find_dotenv
 import os, random, csv
 
-working_dir = '/media/lguarnera_group/opontorno/research_activities/DeepFeatureX/'
+load_dotenv(dotenv_path='.env')
+working_dir = os.getenv('WORKING_DIR')
 
 datasets_path = os.path.join(working_dir, 'datasets')
 robustnessdset_path = os.path.join(working_dir, 'testing_robustness')
@@ -12,7 +15,7 @@ for folder in ['bm-dm', 'bm-gan', 'bm-real', 'complete']:
     folder_dir = os.path.join(models_dir, folder)
     if not os.path.exists(folder_dir):
         os.mkdir(folder_dir)
-
+# %%
 def main():
   with open(guidance_path[:-4]+'.txt', 'w') as f:
       for models_name in os.listdir(datasets_path):
@@ -38,4 +41,4 @@ def main():
 
 if __name__=='__main__':
     print('writing new guidance.csv...')
-    main()
+#    main()

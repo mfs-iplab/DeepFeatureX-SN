@@ -4,3 +4,4 @@ wandb/
 guidance.csv
 __pycache__/
 *.yaml
+.env

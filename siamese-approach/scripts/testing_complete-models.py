@@ -12,10 +12,6 @@ from architecture import *
 from torch.utils.data import DataLoader
 
 # %%
-parser = argparse.ArgumentParser(
-    prog='training complete model',
-    description='train complete model'
-)
 
 parser.add_argument('-b', '--backbone', type=str)
 parser.add_argument('-back_path', '--backbone_path', type=str, default=None)
