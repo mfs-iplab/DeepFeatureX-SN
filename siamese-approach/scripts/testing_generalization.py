@@ -29,7 +29,7 @@ if not args.backbone_path==None:
     complete_model.load_state_dict(torch.load(args.backbone_path))
 else:
     saved_backbone_name = call_saved_model(backbone_name=args.backbone)
-    complete_model.load_state_dict(torch.load(models_dir+'/complete_models/'+saved_backbone_name+'.pt'))
+    complete_model.load_state_dict(torch.load(models_dir+'/complete/'+saved_backbone_name+'.pt'))
 
 trans = get_trans(model_name=args.backbone)
 loss = nn.CrossEntropyLoss()

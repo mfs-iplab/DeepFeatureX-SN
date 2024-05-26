@@ -1,9 +1,6 @@
 # %%
-from dotenv import load_dotenv, find_dotenv
+from wd import *
 import os, random, csv
-
-load_dotenv(dotenv_path='.env')
-working_dir = os.getenv('WORKING_DIR')
 
 datasets_path = os.path.join(working_dir, 'datasets')
 robustnessdset_path = os.path.join(working_dir, 'testing_robustness')
