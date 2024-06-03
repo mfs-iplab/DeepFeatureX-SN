@@ -28,18 +28,17 @@ complete_model = get_complete_model(args.backbone, models_dir=models_dir) if arg
 if not args.backbone_path==None:
     complete_model.load_state_dict(torch.load(args.backbone_path))
 else:
-    saved_backbone_name = call_saved_model(backbone_name=args.backbone)
-    complete_model.load_state_dict(torch.load(models_dir+'/complete/'+saved_backbone_name+'.pt'))
+    complete_model.load_state_dict(torch.load(models_dir+'/complete/'+args.backbone+'.pt'))
 
 trans = get_trans(model_name=args.backbone)
 loss = nn.CrossEntropyLoss()
 
 for folder in ['inner_gan', 'outer_gan', 'io_gan', 'inner_dm', 'outer_dm', 'io_dm', 'inner_all', 'outer_all', 'all']:
     print(f'-   {folder}')
-    test = make_binary(dataset_for_generaization(dset_dir=generalization_path+f'/{folder}', transforms=trans))
-    testload = DataLoader(test, batch_size=1, shuffle=True, num_workers=0, drop_last=False)
+    testing = make_binary(dataset_for_generaization(dset_dir=generalization_path+f'/{folder}', transforms=trans))
+    testload = DataLoader(testing, batch_size=1, shuffle=True, num_workers=0, drop_last=False)
 
     loss = nn.CrossEntropyLoss()
-    testing(model=complete_model, test_loader=testload, loss_fn=loss, plot_cm=args.plot_cm, save_cm=args.save_cm, average=args.average, convert_to_binary=True, saving_dir=pictures_dir+'', model_name=args.backbone)
+    test(model=complete_model, test_loader=testload, loss_fn=loss, plot_cm=args.plot_cm, save_cm=args.save_cm, average=args.average, convert_to_binary=True, saving_dir='', model_name=args.backbone)
 
 # %%

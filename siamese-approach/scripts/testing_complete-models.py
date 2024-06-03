@@ -29,30 +29,29 @@ complete_model = get_complete_model(args.backbone, models_dir=models_dir)
 if not args.backbone_path==None:
     complete_model.load_state_dict(torch.load(args.backbone_path))
 else:
-    saved_backbone_name = call_saved_model(backbone_name=args.backbone)
-    complete_model.load_state_dict(torch.load(models_dir+'/complete_models/'+saved_backbone_name+'.pt'))
+    complete_model.load_state_dict(torch.load(models_dir+'/complete/'+args.backbone+'.pt'))
 
 trans = get_trans(model_name=args.backbone)
 
 if args.classification_type=='binary':
-    test = balance_binary_test(mydataset(dset_dir=datasets_path, guidance=guidance_path, for_overfitting=False, for_testing=True, transforms=trans))
+    testing = balance_binary_test(mydataset(dset_dir=datasets_path, guidance=guidance_path, for_basemodel=False, for_testing=True, transforms=trans))
 else:
-    test = balance_test(mydataset(dset_dir=datasets_path, guidance=guidance_path, for_overfitting=False, for_testing=True, transforms=trans))
-testload = DataLoader(test, batch_size=1, shuffle=True, num_workers=0, drop_last=False)
+    testing = make_balanced(mydataset(dset_dir=datasets_path, guidance=guidance_path, for_basemodel=False, for_testing=True, transforms=trans))
+testload = DataLoader(testing, batch_size=1, shuffle=True, num_workers=0, drop_last=False)
 loss = nn.CrossEntropyLoss()
 
 print('-    RAW')
-testing(model=complete_model, test_loader=testload, loss_fn=loss, plot_cm=args.plot_cm, save_cm=args.save_cm, average=args.average, convert_to_binary=True if args.classification_type=='binary' else False, saving_dir=pictures_dir+'/cunfusion_matrices/RAW', model_name=args.backbone)
+test(model=complete_model, test_loader=testload, loss_fn=loss, plot_cm=args.plot_cm, save_cm=args.save_cm, average=args.average, convert_to_binary=True if args.classification_type=='binary' else False, saving_dir='', model_name=args.backbone)
 
 if args.robustness_test:
     for testin in ['jpegQF90','jpegQF80','jpegQF70','jpegQF60','jpegQF50']:
         print(f'-   {testin}')
         if args.classification_type=='binary':
-            test = balance_binary_test(dataset_for_robustness(dset_dir=robustnessdset_path+f'/testing_dset-{testin}', transforms=trans))
+            testing = balance_binary_test(dataset_for_robustness(dset_dir=robustnessdset_path+f'/testing_dset-{testin}', transforms=trans))
         else:
-            test = balance_test(dataset_for_robustness(dset_dir=robustnessdset_path+f'/testing_dset-{testin}', transforms=trans))
+            testing = make_balanced(dataset_for_robustness(dset_dir=robustnessdset_path+f'/testing_dset-{testin}', transforms=trans))
 
-        testload = DataLoader(test, batch_size=1, shuffle=True, num_workers=0, drop_last=False)
+        testload = DataLoader(testing, batch_size=1, shuffle=True, num_workers=0, drop_last=False)
         loss = nn.CrossEntropyLoss()
 
-        testing(model=complete_model, test_loader=testload, loss_fn=loss, plot_cm=args.plot_cm, save_cm=args.save_cm, average=args.average, convert_to_binary=True if args.classification_type=='binary' else False, saving_dir=pictures_dir+'', model_name=args.backbone)
+        test(model=complete_model, test_loader=testload, loss_fn=loss, plot_cm=args.plot_cm, save_cm=args.save_cm, average=args.average, convert_to_binary=True if args.classification_type=='binary' else False, saving_dir='', model_name=args.backbone)
