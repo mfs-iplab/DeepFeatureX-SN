@@ -40,6 +40,52 @@ class completenn(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
         return x
+    
+class encoder_triplet(nn.Module):
+    def __init__(self, model1, model2, model3, extracted_features, dim_emb = 512):
+        super(encoder_triplet, self).__init__()
+        self.model1 = model1
+        self.model2 = model2
+        self.model3 = model3
+        self.encoder = nn.Sequential(
+            nn.Linear(extracted_features, dim_emb),
+            nn.SELU()
+        )
+    def forward(self, x):
+        code1 = self.model1(x)
+        code2 = self.model2(x)
+        code3 = self.model3(x)
+        feature_vector = torch.cat([code1, code2, code3], dim=1)
+        out = self.encoder(feature_vector)
+        return out
+
+class complete_triplet(nn.Module):
+    def __init__(self, encoder, dim_emb = 512):
+        super(complete_triplet, self).__init__()
+        self.encoder = encoder
+        self.classifier = nn.Sequential(
+            nn.Linear(dim_emb, 3)
+        )
+    def forward(self, x):
+        code = self.encoder(x)
+        out = self.classifier(code)
+        return out
+        
+def get_encoder(backbone_name: str, models_dir:str, extracted_features, dim_emb = 512):
+    model_dm = backbone(backbone_name, finetuning=False, as_feature_extractor=True)
+    model_gan = backbone(backbone_name, finetuning=False, as_feature_extractor=True)
+    model_real = backbone(backbone_name, finetuning=False, as_feature_extractor=True)
+    model_dm.load_state_dict(torch.load(os.path.join(models_dir, 'bm-dm', backbone_name+'-dm.pt')))
+    model_gan.load_state_dict(torch.load(os.path.join(models_dir, 'bm-gan', backbone_name+'-gan.pt')))
+    model_real.load_state_dict(torch.load(os.path.join(models_dir, 'bm-real', backbone_name+'-real.pt')))
+    model_dm.eval()
+    model_gan.eval()
+    model_real.eval()
+    encoder = encoder_triplet(model_dm, model_gan, model_real, extracted_features=extracted_features, dim_emb=dim_emb)
+    for backbone_model in [encoder.model1, encoder.model2, encoder.model3]:
+        for param in backbone_model.parameters():
+            param.requires_grad = False
+    return encoder
 
 def get_model_families():
     model_families = {'densenet': ['densenet121', 'densenet161', 'densenet169', 'densenet201'],
@@ -68,3 +114,10 @@ def get_complete_model(backbone_name: str, models_dir:str):
         for param in backbone_model.parameters():
             param.requires_grad = False
     return complete_model
+
+def get_compete_triplet(backbone_name: str, models_dir:str, extracted_features, dim_emb = 512):
+    triencoder = get_encoder(backbone_name=backbone_name, models_dir=models_dir, extracted_features=extracted_features, dim_emb = dim_emb)
+    triplet_model = complete_triplet(encoder=triencoder, dim_emb=dim_emb)
+    for param in triplet_model.encoder.parameters():
+            param.requires_grad = False
+    return triplet_model
