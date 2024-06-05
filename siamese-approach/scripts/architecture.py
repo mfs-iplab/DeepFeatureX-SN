@@ -117,6 +117,7 @@ def get_complete_model(backbone_name: str, models_dir:str):
 
 def get_compete_triplet(backbone_name: str, models_dir:str, extracted_features, dim_emb = 512):
     triencoder = get_encoder(backbone_name=backbone_name, models_dir=models_dir, extracted_features=extracted_features, dim_emb = dim_emb)
+    triencoder.load_state_dict(torch.load(os.path.join(models_dir, 'triplet/encoder', backbone_name+'-triencoder.pt')))
     triplet_model = complete_triplet(encoder=triencoder, dim_emb=dim_emb)
     for param in triplet_model.encoder.parameters():
             param.requires_grad = False

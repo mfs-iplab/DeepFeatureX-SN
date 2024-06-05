@@ -91,7 +91,7 @@ class pair_dset(Dataset):
            j = np.random.choice(self.idx_list[diff_class])
         self.paired_idx.append(j)
   def __len__(self):
-     return(len(self.files))
+     return len(self.files)
   def __getitem__(self, i):
     item = self.files[i]
     paired_item = self.files[self.paired_idx[i]]
@@ -100,6 +100,59 @@ class pair_dset(Dataset):
     pair_label = self.pair_labels[i]
     return img, paired_img, klass, paired_klass, pair_label 
   
+class triplet_dset(Dataset):
+  def __init__(self, dset_dir, guidance, main_class=None, for_basemodel=True, for_testing=False, transforms=T.Compose([])):
+    self.dset_dir = Path(dset_dir)
+    self.transforms = transforms
+    self.files = []
+    labels = pd.read_csv(guidance)
+    models = sorted(os.listdir(self.dset_dir))
+    n=0 if for_basemodel else 1
+    if for_testing: n=2
+    for model_name in models:
+      if for_basemodel:
+        assert main_class in models
+        class_idx=1 if model_name==main_class else 0
+      else:
+        class_idx = models.index(model_name) # model class
+      model_path = os.path.join(self.dset_dir, model_name)
+      architectures = sorted(os.listdir(model_path))
+      for architecture_name in architectures:
+        class_idx2 = architectures.index(architecture_name) # architecture class
+        architecture_path = os.path.join(model_path, architecture_name)         
+        for image in os.listdir(architecture_path):
+          image_path = os.path.join(architecture_path, image)
+          image_dir = image_path.split('datasets')[1]
+          if np.array(labels[labels['image_path']==image_dir])[0,0]==n:
+            self.files += [{"file": image_path, "class_mod": class_idx, "class_arch": class_idx2}]
+          else:
+            continue
+    self.idx_list = [[], []] if for_basemodel else [[], [], []]
+    for idx, item in enumerate(self.files):
+      class_mod = item['class_mod']
+      self.idx_list[class_mod].append(idx)
+    self.generate_triplets()
+  def generate_triplets(self):
+    self.similar_idx = []
+    self.dissimilar_idx = []
+    for i in range(len(self.files)):
+      c1 = self.files[i]['class_mod']
+      j = np.random.choice(self.idx_list[c1])
+      diff_class = np.random.choice(list(set(range(len(self.idx_list))) - {c1}))
+      k = np.random.choice(self.idx_list[diff_class])
+      self.similar_idx.append(j)
+      self.dissimilar_idx.append(k)
+  def __len__(self):
+    return len(self.files)
+  def __getitem__(self, idx):
+    item1 = self.files[idx]
+    item2 = self.files[self.similar_idx[idx]]
+    item3 = self.files[self.dissimilar_idx[idx]]
+    img1, l1 = self.transforms(Image.open(item1['file']).convert("RGB")), torch.tensor(item1['class_mod'])
+    img2, l2 = self.transforms(Image.open(item2['file']).convert("RGB")), torch.tensor(item2['class_mod'])
+    img3, l3 = self.transforms(Image.open(item3['file']).convert("RGB")), torch.tensor(item3['class_mod'])
+    return img1, img2, img3, l1, l2, l3
+
 class dataset_for_robustness(Dataset):
   def __init__(self, dset_dir, transforms=T.Compose([])):
     self.dset_dir = Path(dset_dir)
