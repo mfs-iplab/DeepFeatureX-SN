@@ -84,7 +84,9 @@ def main():
 
     guidance_csv = pd.read_csv(guidance_path)
     df = guidance_csv[guidance_csv['label']==2]
-    for _, row in df.iterrows():
+    progressive_bar = tqdm(df.iterrows(), total=len(df))
+    progressive_bar.desc = 'processing images'
+    for _, row in progressive_bar:
         img_path = datasets_path+row['image_path']
         img = img_path.split('/')[-1]
         fold = os.path.join(img_path.split('/')[-3], img_path.split('/')[-2])
