@@ -4,11 +4,12 @@ import torch.nn as nn
 import torchvision.transforms as T
 import warnings
 warnings.filterwarnings('ignore')
-from dataset_classes import *
-from training_procedure import *
-from import_classifiers import *
-from settings import *
 from torch.utils.data import DataLoader
+
+from dfx import backbone
+from dfx import get_path
+from dfx import umbalanced_dataset
+from dfx import testing
 
 # %% Settings for testing phase
 trans = T.Compose([
@@ -23,6 +24,12 @@ trans_vits = T.Compose([
     T.ToTensor(),
     T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
+
+datasets_path = get_path('dataset')
+guidance_path = get_path('guidance')
+models_dir = get_path('models')
+generalization_path = get_path('data_generalization')
+robustnessdset_path = get_path('data_robustness')
 
 test_dm = umbalanced_dataset(dset_dir=datasets_path, guidance=guidance_path, main_class='dm_generated', for_overfitting=False, for_testing=True, perc_to_take=1, transforms=trans)
 test_gan = umbalanced_dataset(dset_dir=datasets_path, guidance=guidance_path, main_class='gan_generated', for_overfitting=False, for_testing=True, perc_to_take=1, transforms=trans)

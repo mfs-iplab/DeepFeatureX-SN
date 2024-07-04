@@ -236,15 +236,3 @@ def get_trans(model_name:str):
             T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         ])
     return trans
-
-# # %%
-# import matplotlib.pyplot as plt
-# fig, ax = plt.subplots(1,3,figsize=(20,20))
-# folders = ['datasets', 'testing_dset-jpegQF80', 'testing_dset-jpegQF50']#,'testing_dset-jpegQF80','testing_dset-jpegQF70','testing_dset-jpegQF60','testing_dset-jpegQF50']
-# for idx, folder in enumerate(folders):
-#     form='.jpg'
-#     if idx==0: form='.png'
-#     image=plt.imread(f'/home/opontorno/data/opontorno/{folder}/gan_generated/STYLEGAN2/seed83551474{form}')
-#     ax[idx].imshow(image)
-#     ax[idx].axis('off')
-#     ax[idx].set_title('RAW') if idx==0 else ax[idx].set_title(folder[-4:])

@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from import_classifiers import *
+from .import_classifiers import *
 
 
 class completenn(nn.Module):
@@ -75,9 +75,9 @@ def get_complete_model(backbone_name: str, models_dir:str):
     model_dm = backbone(backbone_name, pretrained=False, finetuning=True, num_classes=2)
     model_gan = backbone(backbone_name, pretrained=False, finetuning=True, num_classes=2)
     model_real = backbone(backbone_name, pretrained=False, finetuning=True, num_classes=2)
-    model_dm.load_state_dict(torch.load(models_dir+'/dm-overfitting/'+saved_model_name+'.pt'))
-    model_gan.load_state_dict(torch.load(models_dir+'/gan-overfitting/'+saved_model_name+'.pt'))
-    model_real.load_state_dict(torch.load(models_dir+'/real-overfitting/'+saved_model_name+'.pt'))
+    model_dm.load_state_dict(torch.load(models_dir+'/bm-dm/'+saved_model_name+'.pt'))
+    model_gan.load_state_dict(torch.load(models_dir+'/bm-gan/'+saved_model_name+'.pt'))
+    model_real.load_state_dict(torch.load(models_dir+'/bm-real/'+saved_model_name+'.pt'))
     model_dm.eval()
     model_gan.eval()
     model_real.eval()

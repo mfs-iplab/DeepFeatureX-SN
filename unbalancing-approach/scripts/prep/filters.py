@@ -1,17 +1,24 @@
 # %%
 import os
 import cv2
+import argparse
 import pandas as pd
 
-from settings import *
 from tqdm import tqdm
 from PIL import Image
+from dfx import get_path
 
-path_dset = datasets_path
-guidance_path = guidance_path
-path_test = robustnessdset_path
-perc_to_take = 1
-# %%
+def get_parser():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--filters', type=str, action='append', default=['-jpegQF90','-jpegQF80','-jpegQF70','-jpegQF60','-jpegQF50', \
+                                                                        '-GaussNoise-3', '-GaussNoise-7', '-GaussNoise-15', \
+                                                                        '-scaling-50', '-scaling-200', \
+                                                                        '-mir-B', '-rot-45', '-rot-135'])
+    args = parser.parse_args()
+
+    return args
+
 
 def Rotation(image_path, path_test, image, fold, rotations: list | None = [45, 135, 225, 315]):
     for rotation in rotations:
@@ -67,11 +74,12 @@ def JPEGCompr(image_path, path_test, image, fold, qfac: list | None = [1,10,20,3
             print("**Errore nell'elaborazione della foto: ", image_path)
 
 
-def main():
-    filters = ['-jpegQF90','-jpegQF80','-jpegQF70','-jpegQF60','-jpegQF50', \
-               '-GaussNoise-3', '-GaussNoise-7', '-GaussNoise-15', \
-               '-scaling-50', '-scaling-200', \
-               '-mir-B', '-rot-45', '-rot-135']
+def main(parser):
+    path_dset = get_path('dataset')
+    guidance_path = get_path('guidance')
+    path_test = get_path('data_robustness')
+
+    filters = parser.filters
 
     for fil in filters:
         if not os.path.exists(os.path.join(path_test, f'testing_dset{fil}')):
@@ -87,11 +95,11 @@ def main():
     progressive_bar = tqdm(df.iterrows(), total=len(df))
     progressive_bar.desc = 'processing images'
     for _, row in progressive_bar:
-        img_path = datasets_path+row['image_path']
+        img_path = path_dset+row['image_path']
         img = img_path.split('/')[-1]
         fold = os.path.join(img_path.split('/')[-3], img_path.split('/')[-2])
-#        JPEGCompr(img_path, path_test, img, fold, qfac=['90','80','70','60','50'])
-#        GaussNoise(img_path, path_test, img, fold, kernel=[3,7,15])
+        JPEGCompr(img_path, path_test, img, fold, qfac=['90','80','70','60','50'])
+        GaussNoise(img_path, path_test, img, fold, kernel=[3,7,15])
         Scaling(img_path, path_test, img, fold, factors=[50,200])
         Mirror(img_path, path_test, img, fold)
         Rotation(img_path, path_test, img, fold, rotations=[45,135])
