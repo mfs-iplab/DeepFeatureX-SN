@@ -64,7 +64,7 @@ def main():
                 mode_logs=args.mode_logs,
                 model_name=backbone_name,
                 save_best_model=True,
-                saving_path=os.path.join(models_dir,'complete',backbone_name+conf+'.pt'))
+                saving_path=os.path.join(models_dir,'triplet/complete',backbone_name+conf+'.pt'))
 
 if __name__=='__main__':
         main()
