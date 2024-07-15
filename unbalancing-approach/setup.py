@@ -10,8 +10,9 @@ setup(
     description='',
     author='Orazio Pontorno',
     author_email='orazio.pontorno@phd.unict.it',
+    package_dir={'': 'src'},
     packages=find_packages(
-#        where='src'
+        where='src'
     ),
     classifiers=[
         'Programming Language :: Python :: 3',

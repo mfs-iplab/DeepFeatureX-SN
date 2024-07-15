@@ -1,0 +1,8 @@
+Metadata-Version: 2.1
+Name: dfx
+Version: 0.0.1
+Author: Orazio Pontorno
+Author-email: orazio.pontorno@phd.unict.it
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
