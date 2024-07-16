@@ -1,4 +1,3 @@
-# %% import libraries
 import torch
 import torch.nn as nn
 import torchvision.transforms as T
@@ -27,8 +26,8 @@ def get_parser():
     parser.add_argument('--model_type', type=str, default='complete', choices=['complete', 'backbone'])
     parser.add_argument('--tests', type=str, action='append', default=['inner_gan', 'outer_gan', 'io_gan', 'inner_dm', 'outer_dm', 'io_dm', 'inner_all', 'outer_all', 'all'])
     parser.add_argument('--backbone_path', type=str, default=None)
-    parser.add_argument('--plot_cm', type=str, default=True)
-    parser.add_argument('--save_cm', type=str, default=False)
+    parser.add_argument('--plot_cm', action='store_true')
+    parser.add_argument('--save_cm', action='store_true')
     parser.add_argument('--average', type=str, default='binary', choices=['binary', 'micro', 'macro'])
 
     args = parser.parse_args()

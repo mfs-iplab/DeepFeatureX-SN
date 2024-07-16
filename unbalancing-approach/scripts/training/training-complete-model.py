@@ -31,7 +31,7 @@ def get_parser():
     parser.add_argument('-lr', '--learning_rate', type=float, default=1e-4)
     parser.add_argument('-wd', '--weight_decay', type=float, default=1e-3)
     parser.add_argument('-e', '--epochs', type=int, default=50)
-    parser.add_argument('-sch', '--scheduler', type=bool, default=False)
+    parser.add_argument('-sch', '--scheduler', action='store_true')
     parser.add_argument('-sch_step', '--scheduler_stepsize', type=int, default=10)
     parser.add_argument('-sch_g', '--scheduler_gamma', type=float, default=0.1)
 

@@ -30,5 +30,5 @@ parameters:
     values:
       - 7
       - 15
-program: scripts/train-complete_model.py
+program: scripts/training/train-complete_model.py
 project: siamese-approach

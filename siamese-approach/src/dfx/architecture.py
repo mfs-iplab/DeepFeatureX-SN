@@ -1,8 +1,7 @@
 import os
 import torch
 import torch.nn as nn
-from import_classifiers import *
-
+from .import_classifiers import *
 
 class completenn(nn.Module):
     def __init__(self, model1, model2, model3):
@@ -41,6 +40,7 @@ class completenn(nn.Module):
         x = self.classifier(x)
         return x
     
+
 class encoder_triplet(nn.Module):
     def __init__(self, model1, model2, model3, extracted_features, dim_emb = 512):
         super(encoder_triplet, self).__init__()
@@ -59,6 +59,7 @@ class encoder_triplet(nn.Module):
         out = self.encoder(feature_vector)
         return out
 
+
 class complete_triplet(nn.Module):
     def __init__(self, encoder, dim_emb = 512):
         super(complete_triplet, self).__init__()
@@ -70,6 +71,7 @@ class complete_triplet(nn.Module):
         code = self.encoder(x)
         out = self.classifier(code)
         return out
+        
         
 def get_encoder(backbone_name: str, models_dir:str, extracted_features, dim_emb = 512):
     model_dm = backbone(backbone_name, finetuning=False, as_feature_extractor=True)
@@ -115,7 +117,7 @@ def get_complete_model(backbone_name: str, models_dir:str):
             param.requires_grad = False
     return complete_model
 
-def get_compete_triplet(backbone_name: str, models_dir:str, extracted_features, dim_emb = 512):
+def get_complete_triplet(backbone_name: str, models_dir:str, extracted_features, dim_emb = 512):
     triencoder = get_encoder(backbone_name=backbone_name, models_dir=models_dir, extracted_features=extracted_features, dim_emb = dim_emb)
     triencoder.load_state_dict(torch.load(os.path.join(models_dir, 'triplet/encoder', backbone_name+'-triencoder.pt')))
     triplet_model = complete_triplet(encoder=triencoder, dim_emb=dim_emb)

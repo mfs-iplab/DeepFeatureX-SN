@@ -44,5 +44,5 @@ parameters:
     values:
       - 7
       - 15
-program: scripts/train-base_model.py
+program: scripts/training/train-base_model.py
 project: siamese-approach

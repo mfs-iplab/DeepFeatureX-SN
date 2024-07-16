@@ -32,5 +32,5 @@ parameters:
     values:
       - 7
       - 15
-program: scripts/train-triplet_encoder.py
+program: scripts/training/train-triplet_encoder.py
 project: siamese-approach

@@ -28,5 +28,5 @@ parameters:
     values:
       - 7
       - 15
-program: scripts/train-triplet_complete.py
+program: scripts/training/train-triplet_complete.py
 project: siamese-approach

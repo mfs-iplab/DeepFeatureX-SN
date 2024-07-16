@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from torch.nn import functional as F
 import matplotlib.pyplot as plt
 import time
 import os
@@ -213,13 +212,3 @@ def test(model, test_loader, loss_fn, plot_cm=False, save_cm=False, classes=None
       cm_display = ConfusionMatrixDisplay(confusion_matrix = cm, display_labels = classes)
       cm_display.plot()
       plt.savefig(os.path.join(saving_dir, f'testing_{model_name}-cm.png'))
-
-class ContrastiveLoss(torch.nn.Module):
-    def __init__(self, m=2):
-        super(ContrastiveLoss, self).__init__()
-        self.m = m
-    def forward(self, phi_i, phi_j, l_ij):
-        d = F.pairwise_distance(phi_i, phi_j)
-        l = 0.5 * (1 - l_ij.float()) * torch.pow(d,2) + \
-            0.5 * l_ij.float() * torch.pow( torch.clamp( self.m - d, min = 0) , 2)
-        return l.mean()
