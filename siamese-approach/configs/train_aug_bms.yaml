@@ -1,0 +1,41 @@
+method: grid
+name: aug_base_models
+parameters:
+  backbone:
+    values:
+      - densenet121
+      - densenet161
+  batch_size:
+    values:
+      - 16
+      - 32
+  epochs:
+    value: 30
+  learning_rate:
+    values:
+      - 0.001
+      - 0.0001
+  main_class:
+    values:
+      - dm_generated
+      - gan_generated
+      - real
+  save_model:
+    value: true
+  scheduler:
+    value: true
+  scheduler_gamma:
+    values:
+      - 0.9
+      - 0.6
+      - 0.3
+  scheduler_stepsize:
+    values:
+      - 7
+      - 15
+  weight_decay:
+    values:
+      - 0.001
+      - 0.0001
+program: scripts/training/train_aug-base_model.py
+project: siamese-approach

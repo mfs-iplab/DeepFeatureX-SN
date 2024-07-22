@@ -288,19 +288,30 @@ def make_binary(testing_dset):
   test_dset = Subset(testing_dset, index_list)
   return test_dset
 
-def get_trans(model_name:str):
-    if model_name.startswith('vit'):
-        trans = T.Compose([
-            T.Resize((256, 256)),
-            T.CenterCrop((224,224)),
-            T.ToTensor(),
-            T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        ])
+def get_trans(model_name:str, transformations:list | None = []):
+    
+    if transformations:
+      trans = transformations
     else:
-        trans = T.Compose([
-            T.Resize((256, 256)),
-            T.ToTensor(),
-            T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        ])
+      trans = []
+
+    if model_name.startswith('vit'):
+      base_trans = [
+        T.Resize((256, 256)),
+        T.CenterCrop((224,224))            
+      ]
+    else:
+      base_trans = [
+        T.Resize((256, 256))
+      ]
+    
+    trans.extend(base_trans)
+
+    last_trans = [
+      T.ToTensor(),
+      T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    ]
+
+    trans.extend(last_trans)
+    trans = T.Compose(trans)
     return trans
-# %%

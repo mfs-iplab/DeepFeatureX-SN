@@ -6,6 +6,8 @@ setup(
     install_requires=[
         'numpy',
         'pandas',
+        'tqdm',
+        'wandb'
     ],
     description='',
     author='Orazio Pontorno',

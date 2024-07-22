@@ -26,12 +26,12 @@ def get_parser():
     parser.add_argument('--backbone', type=str)
     parser.add_argument('--backbone_path', type=str, default=None)
     parser.add_argument('--classification_type', type=str, default='binary', choices=['binary', 'multi-class'])
-    parser.add_argument('--triplet', action='store_true')
-    parser.add_argument('--plot_cm', action='store_true')
-    parser.add_argument('--save_cm', action='store_true')
+    parser.add_argument('--triplet', type=bool, default=False)
+    parser.add_argument('--plot_cm', type=bool, default=False)
+    parser.add_argument('--save_cm', type=bool, default=False)
     parser.add_argument('--average', type=str, default='binary', choices=['binary', 'micro', 'macro'])
-    parser.add_argument('--test_raw', action='store_true')
-    parser.add_argument('--robustness_test', action='store_true')
+    parser.add_argument('--test_raw', type=bool, default=False)
+    parser.add_argument('--robustness_test', type=bool, default=False)
     parser.add_argument('-rt', '--robustness_types', action='append', choices=['jpegQF90','jpegQF80','jpegQF70','jpegQF60','jpegQF50', 'GaussNoise-3', 'GaussNoise-7', \
                                                         'GaussNoise-15', 'mir-B', 'rot-45', 'rot-135', 'scaling-50', 'scaling-200'])
 
@@ -65,7 +65,6 @@ def main(parser):
         testload = DataLoader(testing, batch_size=1, shuffle=True, num_workers=0, drop_last=False)
         loss = nn.CrossEntropyLoss()
         test(model=complete_model, test_loader=testload, loss_fn=loss, plot_cm=parser.plot_cm, save_cm=parser.save_cm, average=parser.average, convert_to_binary=True if parser.classification_type=='binary' else False, saving_dir='', model_name=parser.backbone)
-
 
     if parser.robustness_test:
         for testin in parser.robustness_types:

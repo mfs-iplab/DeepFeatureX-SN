@@ -1,4 +1,3 @@
-# %% import libraries
 import torch
 import torch.nn as nn
 import torchvision.transforms as T
@@ -26,11 +25,11 @@ def get_parser():
     parser.add_argument('--backbone', type=str)
     parser.add_argument('--backbone_path', type=str, default=None)
     parser.add_argument('--classification_type', type=str, default='multi-class', choices=['binary', 'multi-class'])
-    parser.add_argument('--plot_cm', action='store_true')
-    parser.add_argument('--save_cm', action='store_true')
+    parser.add_argument('--plot_cm', type=bool, default=False)
+    parser.add_argument('--save_cm', type=bool, default=False)
     parser.add_argument('--average', type=str, default='micro', choices=['binary', 'micro', 'macro'])
-    parser.add_argument('--robustness_test', action='store_true')
-    parser.add_argument('--test_raw', action='store_true')
+    parser.add_argument('--robustness_test', type=bool, default=False)
+    parser.add_argument('--test_raw', type=bool, default=False)
     parser.add_argument('-rt', '--robustness_types', action='append', choices=['jpegQF90','jpegQF80','jpegQF70','jpegQF60','jpegQF50', 'GaussNoise-3', 'GaussNoise-7', \
                                                         'GaussNoise-15', 'mir-B', 'rot-45', 'rot-135', 'scaling-50', 'scaling-200'])
 
