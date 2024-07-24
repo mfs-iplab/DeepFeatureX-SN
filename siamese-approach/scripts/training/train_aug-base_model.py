@@ -80,17 +80,6 @@ def main(parser):
     print(f'\n-  {backbone_name}\n')
     base_model = backbone(backbone_name, pretrained=True, finetuning=False, as_feature_extractor=True)
     base_model.load_state_dict(torch.load(models_sd_dir))
-    for param in base_model.features.parameters():
-        param.requires_grad = False
-
-    def get_outputsize(model, backbone_name:str):
-        sh = 256 if not backbone_name.startswith('vit') else 224
-        t = torch.rand(1,3,sh,sh)
-        out = model(t)
-        return out.shape[-1]
-    
-    sh = get_outputsize(model=base_model, backbone_name=backbone_name)
-    base_model.classifier = nn.Linear(sh, sh)
 
     optimizer = Adam(base_model.parameters(),
                     lr=parser.learning_rate, 
