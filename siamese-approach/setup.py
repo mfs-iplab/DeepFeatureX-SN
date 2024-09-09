@@ -3,12 +3,7 @@ from setuptools import setup, find_packages
 setup(
     name='dfx',      
     version='0.1.1',
-    install_requires=[
-        'numpy',
-        'pandas',
-        'tqdm',
-        'wandb'
-    ],
+    install_requires=[],
     description='',
     author='Orazio Pontorno',
     author_email='orazio.pontorno@phd.unict.it',

@@ -101,10 +101,11 @@ def get_model_families():
                         'vit_l': ['vit_l_16', 'vit_l_32']}
     return model_families
 
-def get_complete_model(backbone_name: str, models_dir:str):
+def get_complete_model(backbone_name: str, models_dir:str, augmented:bool | None = False):
     model_dm = backbone(backbone_name, finetuning=False, as_feature_extractor=True)
     model_gan = backbone(backbone_name, finetuning=False, as_feature_extractor=True)
     model_real = backbone(backbone_name, finetuning=False, as_feature_extractor=True)
+    if augmented: backbone_name = 'aug_' + backbone_name
     model_dm.load_state_dict(torch.load(os.path.join(models_dir, 'bm-dm', backbone_name+'-dm.pt')))
     model_gan.load_state_dict(torch.load(os.path.join(models_dir, 'bm-gan', backbone_name+'-gan.pt')))
     model_real.load_state_dict(torch.load(os.path.join(models_dir, 'bm-real', backbone_name+'-real.pt')))
