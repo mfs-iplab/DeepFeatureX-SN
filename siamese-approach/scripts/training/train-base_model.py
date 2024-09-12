@@ -20,6 +20,7 @@ from dfx import backbone
 def get_parser():
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('--augmented', type=bool, default=False)
     parser.add_argument('--backbone', type=str)
     parser.add_argument('--mode_logs', type=str, default='online', choices=['online', 'offline', 'disabled'])
     parser.add_argument('--main_class', type=str, choices=['dm_generated','gan_generated','real'])
@@ -46,7 +47,18 @@ def main(parser):
 
     batch_size = parser.batch_size
 
-    trans = get_trans(model_name=parser.backbone)
+    if not parser.augmented:
+        trans = get_trans(model_name=parser.backbone)
+    else:
+        trans = get_trans(model_name=parser.backbone,
+                transformations=[
+                    v2.RandomChoice([v2.GaussianBlur(kernel_size=1), v2.GaussianBlur(kernel_size=3), v2.GaussianBlur(kernel_size=5), v2.GaussianBlur(kernel_size=9)]),
+                    v2.RandomChoice([v2.RandomRotation(degrees=(0,360)), v2.RandomRotation(degrees=0)]),
+                    v2.RandomChoice([v2.RandomResizedCrop(size=256), v2.RandomResizedCrop(size=512), v2.RandomResizedCrop(size=1024)]),
+                    v2.RandomChoice([v2.ColorJitter(brightness=.5, contrast=.5, saturation=.5, hue=.5)]),
+                    v2.RandomChoice([v2.JPEG(quality=100), v2.JPEG(quality=80), v2.JPEG(quality=60), v2.JPEG(quality=40), v2.JPEG(quality=20)])       
+                    ]
+                )
 
     dset = make_balanced(pair_dset(dset_dir=datasets_path, main_class=parser.main_class, guidance=guidance_path, for_basemodel=True, for_testing=False, transforms=trans), binary=True)
 
@@ -75,6 +87,8 @@ def main(parser):
         return sv_dir
 
     saving_dir = os.path.join(models_dir, get_saving_dir(parser.main_class))+'/'
+    saving_model_name = backbone_name+conf+'.pt'
+    if parser.augmented: saving_model_name = 'aug_' + saving_model_name
 
     train_siamese(model=base_model,
             loaders={'train': trainload, 'valid': validload},
@@ -85,7 +99,7 @@ def main(parser):
             mode_logs=parser.mode_logs,
             model_name=backbone_name,
             save_best_model=parser.save_model,
-            saving_path=saving_dir+backbone_name+conf+'.pt')
+            saving_path=saving_dir+saving_model_name)
 
 if __name__=='__main__':
     parser = get_parser()

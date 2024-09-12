@@ -1,6 +1,8 @@
 method: grid
 name: aug_base_models
 parameters:
+  augmented:
+    value: True
   backbone:
     values:
       - densenet121
@@ -37,5 +39,5 @@ parameters:
     values:
       - 0.001
       - 0.0001
-program: scripts/training/train_aug-base_model.py
+program: scripts/training/train-base_model.py
 project: siamese-approach
