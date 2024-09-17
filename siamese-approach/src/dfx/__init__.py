@@ -7,6 +7,7 @@ from .architecture import (
     get_complete_triplet
 )
 from .dataset_classes import (
+    myaugdataset,
     mydataset,
     dataset_for_robustness,
     dataset_for_generaization,

@@ -6,11 +6,12 @@ import warnings
 warnings.filterwarnings('ignore')
 from torch.utils.data import random_split, DataLoader
 from torch.optim import Adam
-from torch.optim.lr_scheduler import StepLR
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 import sys, os, argparse
 
 from dfx import get_complete_model
 from dfx import (
+    myaugdataset,
     mydataset,
     check_len,
     make_train_valid,
@@ -32,8 +33,7 @@ def get_parser():
     parser.add_argument('--weight_decay', type=float, default=1e-3)
     parser.add_argument('--epochs', type=int, default=50)
     parser.add_argument('--scheduler', type=bool, default=False)
-    parser.add_argument('--scheduler_stepsize', type=int, default=10)
-    parser.add_argument('--scheduler_gamma', type=float, default=0.1)
+    parser.add_argument('--scheduler_factor', type=float, default=0.1)
 
     args = parser.parse_args()
     return args
@@ -42,27 +42,20 @@ def get_parser():
 def main(parser):
 
     datasets_path = get_path('dataset')
+    augdataset_path = get_path('augmented_dataset')
     guidance_path = get_path('guidance')
     models_dir = get_path('models')
 
-    conf = f'-b{parser.batch_size}-lr{parser.learning_rate}-wd{parser.weight_decay}-step{parser.scheduler_stepsize}-gamma{parser.scheduler_gamma}'
+    conf = f'-b{parser.batch_size}-lr{parser.learning_rate}-wd{parser.weight_decay}-sfactor{parser.scheduler_factor}'
 
     batch_size = parser.batch_size
 
-    if not parser.augmented:
-        trans = get_trans(model_name=parser.backbone)
-    else:
-        trans = get_trans(model_name=parser.backbone,
-                transformations=[
-                    v2.RandomChoice([v2.GaussianBlur(kernel_size=1), v2.GaussianBlur(kernel_size=3), v2.GaussianBlur(kernel_size=5), v2.GaussianBlur(kernel_size=9)]),
-                    v2.RandomChoice([v2.RandomRotation(degrees=(0,360)), v2.RandomRotation(degrees=0)]),
-                    v2.RandomChoice([v2.RandomResizedCrop(size=256), v2.RandomResizedCrop(size=512), v2.RandomResizedCrop(size=1024)]),
-                    v2.RandomChoice([v2.ColorJitter(brightness=.5, contrast=.5, saturation=.5, hue=.5)]),
-                    v2.RandomChoice([v2.JPEG(quality=100), v2.JPEG(quality=80), v2.JPEG(quality=60), v2.JPEG(quality=40), v2.JPEG(quality=20)])       
-                    ]
-                )
+    trans = get_trans(model_name=parser.backbone)
     
-    dset = mydataset(dset_dir=datasets_path, guidance=guidance_path, for_basemodel=False, for_testing=False, transforms=trans)
+    if not parser.augmented:
+        dset = mydataset(dset_dir=datasets_path, guidance=guidance_path, for_basemodel=False, for_testing=False, transforms=trans)
+    else:
+        dset = myaugdataset(dset_dir=datasets_path, augdset_dir=augdataset_path, guidance_path=guidance_path, for_basemodel=False, transforms=trans)
     trainset, validset = make_train_valid(dset=dset, validation_ratio=0.2)
 
     perc_dm, perc_gan, perc_real = check_len(dset, binary=False, return_perc=True)
@@ -81,7 +74,7 @@ def main(parser):
             lr=parser.learning_rate, 
             weight_decay=parser.weight_decay, 
             betas=(0.9, 0.999))
-    scheduler = StepLR(optimizer=optimizer, step_size=parser.scheduler_stepsize, gamma=parser.scheduler_gamma) if parser.scheduler else None
+    scheduler = ReduceLROnPlateau(optimizer=optimizer, mode='min', factor=parser.scheduler_factor, patience=15) if parser.scheduler else None
 
     saving_model_name = backbone_name+conf+'.pt'
     if parser.augmented: saving_model_name = 'aug_' + saving_model_name

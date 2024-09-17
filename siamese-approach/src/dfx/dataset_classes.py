@@ -1,14 +1,14 @@
-# %% import libraries
+import torch
+import torchvision.transforms as T
 import pandas as pd
 import numpy as np
 import os, random
 from pathlib import Path
 from PIL import Image
-import torch
-import torchvision.transforms as T
+from tqdm import tqdm
 from torch.utils.data import Dataset, Subset
 
-# %%
+
 class mydataset(Dataset):
   def __init__(self, dset_dir, guidance, main_class=None, for_basemodel=True, for_testing=False, transforms=T.Compose([])):
     self.dset_dir = Path(dset_dir)
@@ -46,6 +46,89 @@ class mydataset(Dataset):
     img = Image.open(file).convert("RGB")
     img = self.transforms(img)
     return img, class_mod, class_arch
+
+
+class myaugdataset(Dataset):
+    def __init__(self, dset_dir, augdset_dir, guidance_path, percentage_augmented=0.5, for_basemodel=False, main_class=None, transforms=None):
+        self.dset_dir = Path(dset_dir)
+        self.augdset_dir = Path(augdset_dir)
+        self.guidance = pd.read_csv(guidance_path)
+        self.transforms = transforms or T.Compose([])
+        self.perc = percentage_augmented
+        self.n = 0 if for_basemodel else 1
+        self.files = []
+        
+        self._take_from_dset()
+        self._take_from_augdset()
+
+        random.shuffle(self.files)
+
+    def _take_from_dset(self):
+        engines = list(self.dset_dir.iterdir())
+
+        total_images = int(len(self.guidance[self.guidance['label']==self.n]) * self.perc) + 1
+        pbar = tqdm(total=total_images, desc="raw images")
+        
+        for class_idx, engine in enumerate(engines):
+            if self.n == 0: class_idx = int(engine.name == main_class)
+            models = sorted(engine.iterdir())
+            for class_idx2, model in enumerate(models):
+                images = list(model.iterdir())
+                random.shuffle(images)
+                sample_size = int(len(images) * self.perc)
+                
+                for image_path in random.sample(images, sample_size):
+                    image_dir = '/' + '/'.join(image_path.parts[-3:])
+                    if self.guidance[self.guidance['image_path'] == image_dir].iloc[0, 0] == self.n:
+                        self.files.append({
+                            "file": image_path,
+                            "class_mod": class_idx,
+                            "class_arch": class_idx2
+                        })
+                        pbar.update(1)
+        
+    def _take_from_augdset(self):        
+        attacks = list(self.augdset_dir.iterdir())
+        total_iterations = int(len(self.guidance[self.guidance['label']==self.n]) * (1 - self.perc))
+        
+        pbar = tqdm(total=total_iterations, desc="augmented images")
+        
+        new_files = []
+        for _ in range(total_iterations):
+            try:
+                attack = random.choice(attacks)
+                engines = sorted(list(attack.iterdir()))
+                engine = random.choice(engines)
+                if self.n == 0:
+                    class_idx = int(engine.name == main_class)
+                else:
+                    class_idx = engines.index(engine)
+                models = sorted(list(engine.iterdir()))
+                model = random.choice(models)
+                class_idx2 = models.index(model)
+                images = list(model.iterdir())
+                image_path = random.choice(images)
+                image_dir = '/' + '/'.join(image_path.parts[-3:])
+                if self.guidance[self.guidance['image_path'] == image_dir].iloc[0, 0] == self.n:
+                    self.files.append({
+                        "file": image_path,
+                        "class_mod": class_idx,
+                        "class_arch": class_idx2
+                    })
+                    pbar.update(1)
+            except:
+                continue
+    def __len__(self):
+        return len(self.files)
+    def __getitem__(self, i):
+        item = self.files[i]
+        file = item['file']
+        class_mod = torch.tensor(item['class_mod'])
+        class_arch = torch.tensor(item['class_arch'])
+        img = Image.open(file).convert("RGB")
+        img = self.transforms(img)
+        return img, class_mod, class_arch
+
 
 class pair_dset(Dataset):
   def __init__(self, dset_dir, guidance, main_class=None, for_basemodel=True, for_testing=False, transforms=T.Compose([])):
@@ -99,7 +182,8 @@ class pair_dset(Dataset):
     paired_img, paired_klass = self.transforms(Image.open(paired_item['file']).convert("RGB")), torch.tensor(paired_item['class_mod'])
     pair_label = self.pair_labels[i]
     return img, paired_img, klass, paired_klass, pair_label 
-  
+
+
 class triplet_dset(Dataset):
   def __init__(self, dset_dir, guidance, main_class=None, for_basemodel=True, for_testing=False, transforms=T.Compose([])):
     self.dset_dir = Path(dset_dir)
@@ -153,6 +237,7 @@ class triplet_dset(Dataset):
     img3, l3 = self.transforms(Image.open(item3['file']).convert("RGB")), torch.tensor(item3['class_mod'])
     return img1, img2, img3, l1, l2, l3
 
+
 class dataset_for_robustness(Dataset):
   def __init__(self, dset_dir, transforms=T.Compose([])):
     self.dset_dir = Path(dset_dir)
@@ -179,7 +264,8 @@ class dataset_for_robustness(Dataset):
     img = Image.open(file).convert("RGB")
     img = self.transforms(img)
     return img, class_mod, class_arch
-    
+
+
 class dataset_for_generaization(Dataset):
   def __init__(self, dset_dir, transforms=T.Compose([])):
     self.dset_dir = Path(dset_dir)
@@ -226,6 +312,7 @@ def check_len(dset, binary:bool=False, return_perc=False):
     if return_perc:
         return perc_main, perc_others
 
+
 def make_train_valid(dset, validation_ratio=0.2):
   class_counts = [0, 0, 0]
   index_lists = [[], [], []]
@@ -244,6 +331,7 @@ def make_train_valid(dset, validation_ratio=0.2):
   valid_dset = Subset(dset, valid_indices)
   return train_dset, valid_dset
 
+
 def get_counts_idx(dset, binary=False):
   class_counts = [0, 0] if binary else [0, 0, 0]
   index_lists = [[], []] if binary else [[], [], []]
@@ -253,6 +341,7 @@ def get_counts_idx(dset, binary=False):
     index_lists[class_mod].append(idx)
   return class_counts, index_lists
 
+
 def make_balanced(dset, binary=False):
     class_counts, index_lists = get_counts_idx(dset, binary=binary)
     min_count = min(class_counts)
@@ -261,6 +350,7 @@ def make_balanced(dset, binary=False):
         _indices.extend(random.sample(indices, min_count))
     _dset = Subset(dset, _indices)
     return _dset
+
 
 def balance_binary_test(testing_dset):
     class_counts = [0, 0]
@@ -278,6 +368,7 @@ def balance_binary_test(testing_dset):
     test_dset = Subset(testing_dset, binary_test_index)
     return test_dset
 
+
 def make_binary(testing_dset):
   index_list=[]
   for idx, item in enumerate(testing_dset.files):
@@ -288,13 +379,12 @@ def make_binary(testing_dset):
   test_dset = Subset(testing_dset, index_list)
   return test_dset
 
+
 def get_trans(model_name:str, transformations:list | None = []):
-    
     if transformations:
       trans = transformations
     else:
       trans = []
-
     if model_name.startswith('vit'):
       base_trans = [
         T.Resize((256, 256)),
@@ -304,14 +394,11 @@ def get_trans(model_name:str, transformations:list | None = []):
       base_trans = [
         T.Resize((256, 256))
       ]
-    
     trans.extend(base_trans)
-
     last_trans = [
       T.ToTensor(),
       T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ]
-
     trans.extend(last_trans)
     trans = T.Compose(trans)
     return trans

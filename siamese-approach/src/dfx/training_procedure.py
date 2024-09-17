@@ -11,6 +11,7 @@ from IPython.display import clear_output
 
 dev = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+
 def train(model, loaders, epochs, optimizer, loss_fn, starting_epoch=0, scheduler=None, mode_logs:str='online', model_name='', save_best_model=False, saving_path='', initial_val_to_beat=10):
   if save_best_model: assert saving_path.endswith('.pt')
   wandb.init(
@@ -67,7 +68,7 @@ def train(model, loaders, epochs, optimizer, loss_fn, starting_epoch=0, schedule
           f'train loss {losses["train"][-1]:.4f}, val loss: {losses["val"][-1]:.4f}, ',
           f'train acc {accuracies["train"][-1]*100:.2f}%, val acc: {accuracies["val"][-1]*100:.2f}%')
     if scheduler != None:
-      scheduler.step()
+      scheduler.step(losses['val'][-1])
     if save_best_model and losses['val'][-1]<best_val_loss:
       best_val_loss=losses['val'][-1]
       best_epoch = epoch
@@ -77,6 +78,7 @@ def train(model, loaders, epochs, optimizer, loss_fn, starting_epoch=0, schedule
   if save_best_model: print(f'\nmodel saved at epoch: {best_epoch+1}')
   print(f'total training time: {(esecution_time/60):2f} minutes.\n')
   wandb.finish()
+
 
 def train_siamese(model, loaders, epochs, optimizer, loss_fn, scheduler=None, starting_epoch=0, mode_logs:str='online', save_best_model=False, model_name='', saving_path='', initial_val_to_beat=10):
   if save_best_model: assert saving_path.endswith('.pt')
@@ -126,6 +128,7 @@ def train_siamese(model, loaders, epochs, optimizer, loss_fn, scheduler=None, st
   if save_best_model: print(f'\nmodel saved at epoch: {best_epoch+1}')
   print(f'total training time: {(esecution_time/60):2f} minutes.\n')
   wandb.finish()  
+
 
 def train_triplet_encoder(model, loaders, epochs, optimizer, loss_fn, scheduler=None, starting_epoch=0, mode_logs:str='online', save_best_model=False, model_name='', saving_path='', initial_val_to_beat=10):
   if save_best_model: assert saving_path.endswith('.pt')
@@ -177,6 +180,7 @@ def train_triplet_encoder(model, loaders, epochs, optimizer, loss_fn, scheduler=
   if save_best_model: print(f'\nmodel saved at epoch: {best_epoch+1}')
   print(f'total training time: {(esecution_time/60):2f} minutes.\n')
   wandb.finish()  
+
 
 def test(model, test_loader, loss_fn, plot_cm=False, save_cm=False, classes=None, average='binary', saving_dir='', model_name='', convert_to_binary=False):
   assert not saving_dir.endswith('/')
