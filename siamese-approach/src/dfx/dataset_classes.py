@@ -64,7 +64,7 @@ class myaugdataset(Dataset):
         random.shuffle(self.files)
 
     def _take_from_dset(self):
-        engines = list(self.dset_dir.iterdir())
+        engines = sorted(list(self.dset_dir.iterdir()))
 
         total_images = int(len(self.guidance[self.guidance['label']==self.n]) * self.perc) + 1
         pbar = tqdm(total=total_images, desc="raw images")
@@ -93,7 +93,6 @@ class myaugdataset(Dataset):
         
         pbar = tqdm(total=total_iterations, desc="augmented images")
         
-        new_files = []
         for _ in range(total_iterations):
             try:
                 attack = random.choice(attacks)
