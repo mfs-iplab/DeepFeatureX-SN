@@ -24,7 +24,8 @@ def get_parser():
     parser.add_argument('--backbone', type=str)
     parser.add_argument('--model_type', type=str, default='complete', choices=['complete', 'backbone'])
     parser.add_argument('--triplet', type=bool, default=False)
-    parser.add_argument('--backbone_path', type=str, default=None)
+    parser.add_argument('--augmented', type=bool, default=False)
+    parser.add_argument('--model_dict_path', type=str, default=None)
     parser.add_argument('--plot_cm', type=bool, default=False)
     parser.add_argument('--save_cm', type=bool, default=False)
     parser.add_argument('--average', type=str, default='binary', choices=['binary', 'micro', 'macro'])
@@ -43,10 +44,13 @@ def main(parser):
     else:
         complete_model = get_complete_model(parser.backbone, models_dir=models_dir) if parser.model_type=='complete' else backbone(parser.backbone, finetuning=True, num_classes=3)
 
-    if not parser.backbone_path==None:
-        complete_model.load_state_dict(torch.load(parser.backbone_path))
+    if not parser.model_dict_path==None:
+        complete_model.load_state_dict(torch.load(parser.model_dict_path))
     else:
-        weight_path = models_dir+'/triplet/complete/'+parser.backbone+'-tricomplete.pt' if parser.triplet else models_dir+'/complete/'+parser.backbone+'.pt'
+        weight_path = models_dir+'/complete/'+parser.backbone+'.pt'
+        if parser.triplet: weight_path = models_dir+'/triplet/complete/'+parser.backbone+'-tricomplete.pt'  
+        if parser.augmented: weight_path = models_dir+'/complete/aug_'+parser.backbone+'.pt'
+                    
         complete_model.load_state_dict(torch.load(weight_path))
 
     trans = get_trans(model_name=parser.backbone)

@@ -24,15 +24,16 @@ def get_parser():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--backbone', type=str)
-    parser.add_argument('--backbone_path', type=str, default=None)
+    parser.add_argument('--model_dict_path', type=str, default=None)
     parser.add_argument('--classification_type', type=str, default='binary', choices=['binary', 'multi-class'])
     parser.add_argument('--triplet', type=bool, default=False)
+    parser.add_argument('--augmented', type=bool, default=False)
     parser.add_argument('--plot_cm', type=bool, default=False)
     parser.add_argument('--save_cm', type=bool, default=False)
     parser.add_argument('--average', type=str, default='binary', choices=['binary', 'micro', 'macro'])
     parser.add_argument('--test_raw', type=bool, default=False)
     parser.add_argument('--robustness_test', type=bool, default=False)
-    parser.add_argument('-rt', '--robustness_types', action='append', choices=['jpegQF90','jpegQF80','jpegQF70','jpegQF60','jpegQF50', 'GaussNoise-3', 'GaussNoise-7', \
+    parser.add_argument('-rt', '--robustness_types', nargs='+', choices=['jpegQF90','jpegQF80','jpegQF70','jpegQF60','jpegQF50', 'GaussNoise-3', 'GaussNoise-7', \
                                                         'GaussNoise-15', 'mir-B', 'rot-45', 'rot-135', 'scaling-50', 'scaling-200'])
 
     args = parser.parse_args()
@@ -48,10 +49,13 @@ def main(parser):
 
     complete_model = get_complete_triplet(parser.backbone, models_dir=models_dir, extracted_features=2208*3, dim_emb=128) if parser.triplet else get_complete_model(parser.backbone, models_dir=models_dir)
     
-    if not parser.backbone_path==None:
-        complete_model.load_state_dict(torch.load(parser.backbone_path))
+    if not parser.model_dict_path==None:
+        complete_model.load_state_dict(torch.load(parser.model_dict_path))
     else:
-        weight_path = models_dir+'/triplet/complete/'+parser.backbone+'-tricomplete.pt' if parser.triplet else models_dir+'/complete/'+parser.backbone+'.pt'
+        weight_path = models_dir+'/complete/'+parser.backbone+'.pt'
+        if parser.triplet: weight_path = models_dir+'/triplet/complete/'+parser.backbone+'-tricomplete.pt'  
+        if parser.augmented: weight_path = models_dir+'/complete/aug_'+parser.backbone+'.pt'
+                    
         complete_model.load_state_dict(torch.load(weight_path))
 
     trans = get_trans(model_name=parser.backbone)
