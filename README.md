@@ -14,6 +14,7 @@ real-world Cybersecurity applications. DeepFeatureX-SN achieves state-of-the-art
 from novel GAN and DM implementations. Furthermore, a comprehensive ablation study validates the effectiveness of each component in our proposed architecture. This 
 research contributes significantly to the field, offering a more nuanced and accurate approach to identifying and categorizing synthetic images. The results obtained 
 in the different configurations in the generalization tests demonstrate the good capabilities of the model, outperforming methods found in the literature.
+
 <img src="media/dfx-sn.jpeg" alt="Alt text" width="700">
 
 For more information, here the link to the paper:
@@ -136,3 +137,4 @@ The dataset comprises a total of $72,334$ images, distributed as shown in the Ta
   publisher={Springer}
 }
 ```
+
